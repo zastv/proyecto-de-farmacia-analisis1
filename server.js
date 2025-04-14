@@ -16,13 +16,23 @@ app.use(cors({
   credentials: true
 }));
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/farmacia-capsula', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('✅ Conectado a MongoDB'))
-.catch(err => console.error('❌ Error de conexión:', err));
+// URL de conexión (usa la variable de entorno proporcionada por Railway)
+const mongoURI = process.env.MONGODB_URI || 'mongodb://mongo:VThfsqHfCutpGthiaSAEkufiMCfWHtFm@mongodb.railway.internal:27017';
+
+// Opciones de conexión optimizadas
+const connectDB = async () => {
+  try {
+    await mongoose.connect(mongoURI, {
+      dbName: 'farmacia-capsula', // Nombre de tu base de datos
+      retryWrites: true,
+      w: 'majority'
+    });
+    console.log('✅ MongoDB conectado en Railway');
+  } catch (err) {
+    console.error('❌ Error de conexión:', err.message);
+    process.exit(1);
+  }
+};
 
 // Modelos
 const User = mongoose.model('User', new mongoose.Schema({
